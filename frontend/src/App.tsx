@@ -4,6 +4,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import React from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Navbar from "./components/Navbar";
