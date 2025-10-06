@@ -2,12 +2,14 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import passport from './config/passport';
 import authRoutes from './routes/authRoutes';
 import problemRoutes from './routes/problemRoutes';
 import submissionRoutes from './routes/submissionRoutes';
 import statsRoutes from './routes/statsRoutes';
 import discussionRoutes from './routes/discussionRoutes';
 import passwordResetRoutes from './routes/passwordResetRoutes';
+import googleAuthRoutes from './routes/googleAuthRoutes';
 
 // Force load .env file
 const envPath = path.resolve(__dirname, '../.env');
@@ -29,6 +31,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use(passport.initialize());
 
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ 
@@ -40,6 +43,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', googleAuthRoutes);
 app.use('/api/problems', problemRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/stats', statsRoutes);
