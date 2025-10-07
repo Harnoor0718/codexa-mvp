@@ -10,11 +10,19 @@ const GoogleCallback = () => {
   const addToast = useToastStore((state) => state.addToast);
 
   useEffect(() => {
+    console.log('🟢 GoogleCallback page loaded');
+    console.log('🟢 Current URL:', window.location.href);
+    
     const token = searchParams.get('token');
     const userStr = searchParams.get('user');
     const error = searchParams.get('error');
 
+    console.log('🟢 Token:', token ? token.substring(0, 20) + '...' : 'null');
+    console.log('🟢 User string:', userStr ? 'present' : 'null');
+    console.log('🟢 Error:', error);
+
     if (error) {
+      console.log('❌ Error in URL parameters');
       addToast('error', 'Google authentication failed');
       navigate('/login');
       return;
@@ -23,18 +31,23 @@ const GoogleCallback = () => {
     if (token && userStr) {
       try {
         const user = JSON.parse(decodeURIComponent(userStr));
+        console.log('✅ User parsed:', user);
         
         // Store token and user
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
+        console.log('✅ Token and user stored in localStorage');
         
         // Reload to update auth context
+        console.log('✅ Redirecting to home page');
         window.location.href = '/';
       } catch (err) {
+        console.log('❌ Failed to parse user:', err);
         addToast('error', 'Failed to process authentication');
         navigate('/login');
       }
     } else {
+      console.log('❌ Token or user missing in URL');
       addToast('error', 'Authentication failed');
       navigate('/login');
     }

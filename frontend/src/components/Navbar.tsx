@@ -95,6 +95,12 @@ const Navbar = () => {
               </>
             ) : (
               <>
+              <Link
+  to="/admin-login"
+  className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 border border-red-600 dark:border-red-400 rounded-md"
+>
+  Admin
+</Link>
                 <Link
                   to="/login"
                   className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-md text-sm font-medium"

@@ -21,6 +21,7 @@ import ResetPassword from "./pages/ResetPassword";
 import ToastContainer from "./components/ToastContainer";
 import VerifyEmail from "./pages/VerifyEmail";
 import GoogleCallback from './pages/GoogleCallback';
+import AdminLogin from './pages/AdminLogin';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -89,6 +90,7 @@ function AppContent() {
           />
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
         </Routes>
       </div>
     </Router>
