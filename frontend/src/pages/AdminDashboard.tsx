@@ -88,14 +88,22 @@ const AdminDashboard = () => {
       return;
     }
 
+    console.log('🟢 Starting delete for problem:', problemId);
     setDeletingId(problemId);
     try {
+      const token = localStorage.getItem('token');
+      console.log('🟢 Token exists:', !!token);
+      console.log('🟢 Making DELETE request to:', `http://localhost:5000/api/problems/${problemId}`);
+      
       const response = await fetch(`http://localhost:5000/api/problems/${problemId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
+
+      console.log('🟢 Response status:', response.status);
+      console.log('🟢 Response ok:', response.ok);
 
       if (response.ok) {
         addToast('success', 'Problem deleted successfully');
@@ -105,10 +113,11 @@ const AdminDashboard = () => {
         fetchAdminStats();
       } else {
         const data = await response.json();
+        console.log('❌ Error response:', data);
         addToast('error', data.error || 'Failed to delete problem');
       }
     } catch (error) {
-      console.error('Error deleting problem:', error);
+      console.error('❌ Error deleting problem:', error);
       addToast('error', 'Failed to delete problem');
     } finally {
       setDeletingId(null);

@@ -205,27 +205,78 @@ export const updateProblem = async (req: AuthRequest, res: Response) => {
 
 export const deleteProblem = async (req: AuthRequest, res: Response) => {
   try {
+    console.log('🟢 DELETE PROBLEM - Start');
+    
     const userId = req.userId!;
     const { id } = req.params;
+    
+    console.log('🟢 Problem ID:', id);
+    console.log('🟢 User ID:', userId);
     
     // Check if user is admin
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { isAdmin: true }
+      select: { isAdmin: true, username: true }
     });
 
+    console.log('🟢 User found:', user ? 'Yes' : 'No');
+    console.log('🟢 Is admin:', user?.isAdmin);
+
     if (!user?.isAdmin) {
+      console.log('❌ User is not admin');
       return res.status(403).json({ error: 'Admin access required' });
     }
 
-    await prisma.problem.delete({
-      where: { id: parseInt(id) }
+    const problemId = parseInt(id);
+    
+    if (isNaN(problemId)) {
+      console.log('❌ Invalid problem ID');
+      return res.status(400).json({ error: 'Invalid problem ID' });
+    }
+
+    // Check if problem exists
+    const problem = await prisma.problem.findUnique({
+      where: { id: problemId }
     });
 
-    res.json({ message: 'Problem deleted successfully' });
+    if (!problem) {
+      console.log('❌ Problem not found');
+      return res.status(404).json({ error: 'Problem not found' });
+    }
+
+    console.log('🟢 Problem found:', problem.title);
+    console.log('🟢 Deleting submissions...');
+    
+    // Delete related records first
+    const deletedSubmissions = await prisma.submission.deleteMany({
+      where: { problemId }
+    });
+    console.log('🟢 Deleted submissions:', deletedSubmissions.count);
+    
+    console.log('🟢 Deleting test cases...');
+    const deletedTestCases = await prisma.testCase.deleteMany({
+      where: { problemId }
+    });
+    console.log('🟢 Deleted test cases:', deletedTestCases.count);
+
+    console.log('🟢 Deleting problem...');
+    await prisma.problem.delete({
+      where: { id: problemId }
+    });
+
+    console.log('✅ Problem deleted successfully');
+    res.json({ 
+      message: 'Problem deleted successfully',
+      deletedSubmissions: deletedSubmissions.count,
+      deletedTestCases: deletedTestCases.count
+    });
   } catch (error) {
-    console.error('Error deleting problem:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Error deleting problem:', error);
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack');
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 };
 

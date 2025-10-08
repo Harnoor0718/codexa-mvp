@@ -81,13 +81,13 @@ function AppContent() {
             }
           />
           <Route
-            path="/problem/:id"
-            element={
-              <ProtectedRoute>
-                <ProblemDetail />
-              </ProtectedRoute>
-            }
-          />
+  path="/problems/:id"
+  element={
+    <ProtectedRoute>
+      <ProblemDetail />
+    </ProtectedRoute>
+  }
+/>
           <Route path="/auth/google/callback" element={<GoogleCallback />} />
           <Route path="/verify-email/:token" element={<VerifyEmail />} />
           <Route path="/admin-login" element={<AdminLogin />} />

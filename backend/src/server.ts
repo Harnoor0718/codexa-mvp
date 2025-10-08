@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -26,13 +26,26 @@ if (result.error) {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS configuration
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true
 }));
+
+// Body parser
 app.use(express.json());
+
+// Passport
 app.use(passport.initialize());
 
+// CRITICAL: Global request logger - must be BEFORE routes
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log('📥 INCOMING REQUEST:', req.method, req.path);
+  console.log('   Authorization:', req.headers.authorization ? 'Present' : 'Missing');
+  next();
+});
+
+// Health check
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ 
     status: 'OK', 
@@ -42,6 +55,7 @@ app.get('/api/health', (req: Request, res: Response) => {
   });
 });
 
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', googleAuthRoutes);
 app.use('/api/problems', problemRoutes);
@@ -50,7 +64,14 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/discussions', discussionRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 
+// Global error handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error('❌ GLOBAL ERROR:', err);
+  res.status(500).json({ error: 'Internal server error', details: err.message });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
+  console.log('📝 Request logging enabled');
 });
