@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { statsAPI } from '../services/api';
+import { statsAPI, problemAPI } from '../services/api';
 import { useToastStore } from '../stores/toastStore';
 import { useAuth } from '../context/AuthContext';
 import Spinner from '../components/Spinner';
@@ -71,13 +71,8 @@ const AdminDashboard = () => {
 
   const fetchProblems = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/problems', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      setProblems(data.problems || []);
+      const response = await problemAPI.getAll();
+      setProblems(response.data.problems || []);
     } catch (error) {
       console.error('Error fetching problems:', error);
     }
@@ -88,37 +83,18 @@ const AdminDashboard = () => {
       return;
     }
 
-    console.log('🟢 Starting delete for problem:', problemId);
     setDeletingId(problemId);
     try {
-      const token = localStorage.getItem('token');
-      console.log('🟢 Token exists:', !!token);
-      console.log('🟢 Making DELETE request to:', `http://localhost:5000/api/problems/${problemId}`);
-      
-      const response = await fetch(`http://localhost:5000/api/problems/${problemId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      console.log('🟢 Response status:', response.status);
-      console.log('🟢 Response ok:', response.ok);
-
-      if (response.ok) {
-        addToast('success', 'Problem deleted successfully');
-        // Remove from local state
-        setProblems(problems.filter(p => p.id !== problemId));
-        // Refresh stats
-        fetchAdminStats();
-      } else {
-        const data = await response.json();
-        console.log('❌ Error response:', data);
-        addToast('error', data.error || 'Failed to delete problem');
-      }
-    } catch (error) {
-      console.error('❌ Error deleting problem:', error);
-      addToast('error', 'Failed to delete problem');
+      await problemAPI.delete(problemId);
+      addToast('success', 'Problem deleted successfully');
+      // Remove from local state
+      setProblems(problems.filter(p => p.id !== problemId));
+      // Refresh stats
+      fetchAdminStats();
+    } catch (error: any) {
+      console.error('Error deleting problem:', error);
+      const errorMessage = error.response?.data?.error || 'Failed to delete problem';
+      addToast('error', errorMessage);
     } finally {
       setDeletingId(null);
     }
